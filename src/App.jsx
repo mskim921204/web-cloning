@@ -1,14 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from './supabaseClient'
 import './App.css'
 
 function App() {
+
   const [items, setItems] = useState([])
   const [text, setText] = useState('')
 
-  const addItem = () => {
+  const loadItems = async () => {
+    const { data } = await supabase.from('items').select('*').order('id')
+    setItems(data ?? [])
+  }
+
+  useEffect(() => {
+    loadItems()
+  }, [])
+
+  const addItem = async () => {
     if (!text) return
-    setItems([...items, { id: Date.now(), title: text }])
+    await supabase.from('items').insert({ title: text })
     setText('')
+    loadItems()
   }
 
   return (
